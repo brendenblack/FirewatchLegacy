@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Blackbox.Firewatch.Domain</AssemblyName>
+    <RootNamespace>Blackbox.Firewatch.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TeixeiraSoftware.Finance.Currency" Version="4.1.0" />
+  </ItemGroup>
+
+</Project>

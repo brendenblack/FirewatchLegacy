@@ -6,8 +6,8 @@ namespace Blackbox.Firewatch.Application.Security
 {
     public static class Roles
     {
-        public static string Administrator = "admin";
+        public const string Administrator = "admin";
 
-        public static string User = "user";
+        public const string User = "user";
     }
 }

@@ -39,13 +39,13 @@ export class TransactionsPage extends Component<TransactionsPageProps, Transacti
     const token = await authService.getAccessToken();
     console.log('Fetcing data using token', token);
 
-    const transactionsService = new TransactionsClient();
-    transactionsService.parseCsv(new ParseCsvModel({
-        bank: "rbc",
-        csv: '',
-        duplicates: false,
-        userId: ''
-    }));
+    // const transactionsService = new TransactionsClient();
+    // transactionsService.parseCsv(new ParseCsvModel({
+    //     bank: "rbc",
+    //     csv: '',
+    //     duplicates: false,
+    //     userId: ''
+    // }));
         // const response = await fetch('weatherforecast', {
     //     headers: !token ? {} : { 'Authorization': `Bearer ${token}` }
     //   });

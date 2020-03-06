@@ -1,4 +1,5 @@
-﻿using Blackbox.Firewatch.Application.Common.Interfaces;
+﻿using Blackbox.Firewatch.Application.Common.Exceptions;
+using Blackbox.Firewatch.Application.Common.Interfaces;
 using Blackbox.Firewatch.Application.Features;
 using Blackbox.Firewatch.Application.Security;
 using MediatR;

@@ -14,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace Blackbox.Firewatch.Application.Features.Transactions.Queries.ParseCsv
 {
-    public class ParseCsvQuery : PersonScopedAuthorizationRequiredRequest, IRequest<ParseCsvResponse>
+    public class ParseCsvQuery : IRequest<ParseCsvResponse>
     {
-        public override string[] AuthorizedRoles => new string[] { Roles.Administrator };
+        public string PersonId { get; set; }
 
         public string FinancialInstitutionAbbreviation { get; set; }
 
@@ -62,7 +62,7 @@ namespace Blackbox.Firewatch.Application.Features.Transactions.Queries.ParseCsv
                 if (request.ShouldIdentifyDuplicates)
                 {
                     logger.LogDebug("Attempting to identify duplicates in provided transaction log for user {}", 
-                        request.OwnerId);
+                        request.PersonId);
 
                     var firstTransaction = transactionModels
                         .Select(t => t.Date)
@@ -83,7 +83,7 @@ namespace Blackbox.Firewatch.Application.Features.Transactions.Queries.ParseCsv
                     // We check the accountsInPlay array as the master because not all accounts 
                     // represented here have to already exist.
                     var existingTransactions = this.bankContext.Transactions
-                        .Where(t => t.Account.OwnerId == request.OwnerId)
+                        .Where(t => t.Account.OwnerId == request.PersonId)
                         .Where(t => t.Date >= firstTransaction)
                         .Where(t => t.Date <= lastTransaction)
                         .Where(t => accountsInPlay.Contains(t.Account.AccountNumber))

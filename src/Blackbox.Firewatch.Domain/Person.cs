@@ -9,12 +9,6 @@ namespace Blackbox.Firewatch.Domain
     {
         public string Id { get; set; }
 
-        public string FirstName { get; set; } = string.Empty;
-
-        public string LastName { get; set; } = string.Empty;
-
-        public string Email { get; set; }
-
         public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
     }
 }

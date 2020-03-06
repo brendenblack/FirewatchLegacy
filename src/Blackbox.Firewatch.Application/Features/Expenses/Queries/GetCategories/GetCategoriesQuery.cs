@@ -15,7 +15,7 @@ namespace Blackbox.Firewatch.Application.Features.Expenses.Queries.GetCategories
 {
     public class GetCategoriesQuery : PersonScopedAuthorizationRequiredRequest, IRequest<GetCategoriesResponse>
     {
-        public override string[] AuthorizedRoles => throw new NotImplementedException();
+        //public override string[] AuthorizedRoles => throw new NotImplementedException();
 
         public class GetCategoriesHandler : IRequestHandler<GetCategoriesQuery, GetCategoriesResponse>
         {

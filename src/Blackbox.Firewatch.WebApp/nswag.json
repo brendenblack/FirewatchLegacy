@@ -75,7 +75,7 @@
       "exportTypes": true,
       "wrapDtoExceptions": false,
       "exceptionClass": "ApiException",
-      "clientBaseClass": null,
+      "clientBaseClass": "BaseClient",
       "wrapResponses": false,
       "wrapResponseMethods": [],
       "generateResponseClasses": true,
@@ -91,7 +91,7 @@
       "typeStyle": "Class",
       "classTypes": [],
       "extendedClasses": [],
-      "extensionCode": "ClientApp/src/baseclient.ts",
+      "extensionCode": "",
       "generateDefaultValues": true,
       "excludedTypeNames": [],
       "excludedParameterNames": [],
@@ -110,7 +110,7 @@
       "enumNameGeneratorType": null,
       "serviceHost": null,
       "serviceSchemes": null,
-      "output": "ClientApp/src/firewatch.service.ts",
+      "output": "ClientApp/src/firewatch.service.ts"
     }
   }
 }

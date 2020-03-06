@@ -7,14 +7,13 @@
 //----------------------
 // ReSharper disable InconsistentNaming
 
-import authService from './components/api-authorization/AuthorizeService';
-
-export class OidcConfigurationClient {
+export class OidcConfigurationClient extends BaseClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
 
     constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        super();
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl ? baseUrl : "";
     }
@@ -57,18 +56,19 @@ export class OidcConfigurationClient {
     }
 }
 
-export class TransactionsClient {
+export class TransactionsClient extends BaseClient {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
 
     constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        super();
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl ? baseUrl : "";
     }
 
     parseCsv(userId: string | null, body: ParseCsvModel): Promise<ParseCsvResponse> {
-        let url_ = this.baseUrl + "/api/users/{userId}/transactions/parse";
+        let url_ = this.baseUrl + "/api/transactions/parse";
         if (userId === undefined || userId === null)
             throw new Error("The parameter 'userId' must be defined.");
         url_ = url_.replace("{userId}", encodeURIComponent("" + userId)); 
@@ -108,6 +108,86 @@ export class TransactionsClient {
             });
         }
         return Promise.resolve<ParseCsvResponse>(<any>null);
+    }
+
+    fetchTransactions(from?: string | null | undefined, to?: string | null | undefined): Promise<FetchUserTransactionsResponse> {
+        let url_ = this.baseUrl + "/api/transactions?";
+        if (from !== undefined)
+            url_ += "from=" + encodeURIComponent("" + from) + "&"; 
+        if (to !== undefined)
+            url_ += "to=" + encodeURIComponent("" + to) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processFetchTransactions(_response);
+        });
+    }
+
+    protected processFetchTransactions(response: Response): Promise<FetchUserTransactionsResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FetchUserTransactionsResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FetchUserTransactionsResponse>(<any>null);
+    }
+
+    addTransactions(transactions: AddTransactionModel[]): Promise<AddTransactionsResponse> {
+        let url_ = this.baseUrl + "/api/transactions";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(transactions);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processAddTransactions(_response);
+        });
+    }
+
+    protected processAddTransactions(response: Response): Promise<AddTransactionsResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AddTransactionsResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AddTransactionsResponse>(<any>null);
     }
 }
 
@@ -296,6 +376,254 @@ export interface IParseCsvModel {
     duplicates: boolean;
 }
 
+export class FetchUserTransactionsResponse implements IFetchUserTransactionsResponse {
+    transactions!: TransactionModel2[] | undefined;
+
+    constructor(data?: IFetchUserTransactionsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["transactions"])) {
+                this.transactions = [] as any;
+                for (let item of _data["transactions"])
+                    this.transactions!.push(TransactionModel2.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): FetchUserTransactionsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new FetchUserTransactionsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.transactions)) {
+            data["transactions"] = [];
+            for (let item of this.transactions)
+                data["transactions"].push(item.toJSON());
+        }
+        return data; 
+    }
+
+    clone(): FetchUserTransactionsResponse {
+        const json = this.toJSON();
+        let result = new FetchUserTransactionsResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFetchUserTransactionsResponse {
+    transactions: TransactionModel2[] | undefined;
+}
+
+export class TransactionModel2 implements ITransactionModel2 {
+    date!: Date;
+    descriptions!: string[] | undefined;
+    amount!: number;
+    currency!: string | undefined;
+    accountNumber!: string | undefined;
+
+    constructor(data?: ITransactionModel2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
+            if (Array.isArray(_data["descriptions"])) {
+                this.descriptions = [] as any;
+                for (let item of _data["descriptions"])
+                    this.descriptions!.push(item);
+            }
+            this.amount = _data["amount"];
+            this.currency = _data["currency"];
+            this.accountNumber = _data["accountNumber"];
+        }
+    }
+
+    static fromJS(data: any): TransactionModel2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new TransactionModel2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
+        if (Array.isArray(this.descriptions)) {
+            data["descriptions"] = [];
+            for (let item of this.descriptions)
+                data["descriptions"].push(item);
+        }
+        data["amount"] = this.amount;
+        data["currency"] = this.currency;
+        data["accountNumber"] = this.accountNumber;
+        return data; 
+    }
+
+    clone(): TransactionModel2 {
+        const json = this.toJSON();
+        let result = new TransactionModel2();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITransactionModel2 {
+    date: Date;
+    descriptions: string[] | undefined;
+    amount: number;
+    currency: string | undefined;
+    accountNumber: string | undefined;
+}
+
+export class AddTransactionsResponse implements IAddTransactionsResponse {
+    createdIds!: number[] | undefined;
+
+    constructor(data?: IAddTransactionsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["createdIds"])) {
+                this.createdIds = [] as any;
+                for (let item of _data["createdIds"])
+                    this.createdIds!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): AddTransactionsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new AddTransactionsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.createdIds)) {
+            data["createdIds"] = [];
+            for (let item of this.createdIds)
+                data["createdIds"].push(item);
+        }
+        return data; 
+    }
+
+    clone(): AddTransactionsResponse {
+        const json = this.toJSON();
+        let result = new AddTransactionsResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAddTransactionsResponse {
+    createdIds: number[] | undefined;
+}
+
+export class AddTransactionModel implements IAddTransactionModel {
+    accountNumber!: string | undefined;
+    date!: Date;
+    descriptions!: string[] | undefined;
+    tags!: string[] | undefined;
+    amount!: number;
+    currency!: string | undefined;
+
+    constructor(data?: IAddTransactionModel) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.accountNumber = _data["accountNumber"];
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
+            if (Array.isArray(_data["descriptions"])) {
+                this.descriptions = [] as any;
+                for (let item of _data["descriptions"])
+                    this.descriptions!.push(item);
+            }
+            if (Array.isArray(_data["tags"])) {
+                this.tags = [] as any;
+                for (let item of _data["tags"])
+                    this.tags!.push(item);
+            }
+            this.amount = _data["amount"];
+            this.currency = _data["currency"];
+        }
+    }
+
+    static fromJS(data: any): AddTransactionModel {
+        data = typeof data === 'object' ? data : {};
+        let result = new AddTransactionModel();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["accountNumber"] = this.accountNumber;
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
+        if (Array.isArray(this.descriptions)) {
+            data["descriptions"] = [];
+            for (let item of this.descriptions)
+                data["descriptions"].push(item);
+        }
+        if (Array.isArray(this.tags)) {
+            data["tags"] = [];
+            for (let item of this.tags)
+                data["tags"].push(item);
+        }
+        data["amount"] = this.amount;
+        data["currency"] = this.currency;
+        return data; 
+    }
+
+    clone(): AddTransactionModel {
+        const json = this.toJSON();
+        let result = new AddTransactionModel();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAddTransactionModel {
+    accountNumber: string | undefined;
+    date: Date;
+    descriptions: string[] | undefined;
+    tags: string[] | undefined;
+    amount: number;
+    currency: string | undefined;
+}
+
 export interface FileResponse {
     data: Blob;
     status: number;
@@ -332,20 +660,4 @@ function throwException(message: string, status: number, response: string, heade
         throw result;
     else
         throw new ApiException(message, status, response, headers, null);
-}
-
-export class BaseClient {
-    
-    protected transformOptions(options: RequestInit): RequestInit {
-        console.log('Transforming options');
-        const token = authService.getAccessToken();
-        if (token) {
-            if (options.headers) {
-                console.log('Appending authorization header');
-                (options.headers as Headers).append('Authorization', `Bearer ${token}`);
-            }
-        }
-        return options;
-
-    }
 }

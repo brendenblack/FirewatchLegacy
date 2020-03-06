@@ -2,7 +2,7 @@ import authService from './components/api-authorization/AuthorizeService';
 
 export class BaseClient {
     
-    protected transformOptions(options: RequestInit): RequestInit {
+    protected transformOptions(options: RequestInit): Promise<RequestInit> {
         console.log('Transforming options');
         const token = authService.getAccessToken();
         if (token) {
@@ -11,7 +11,7 @@ export class BaseClient {
                 (options.headers as Headers).append('Authorization', `Bearer ${token}`);
             }
         }
-        return options;
+        return new Promise(resolve => { return options; });
 
     }
 }

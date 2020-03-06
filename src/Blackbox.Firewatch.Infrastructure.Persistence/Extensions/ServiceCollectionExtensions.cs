@@ -1,6 +1,7 @@
 ﻿using Blackbox.Firewatch.Application.Common.Interfaces;
 using Blackbox.Firewatch.Infrastructure.Persistence;
 using Blackbox.Firewatch.Infrastructure.Persistence.Identity;
+using Blackbox.Firewatch.Persistence;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Authentication;
@@ -60,18 +61,24 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         options.Clients.Add(new Client
                         {
-                            ClientId = ApplicationDbContext.TestClientId,
+                            ClientId = "Blackbox.Firewatch.WebApp.IntegrationTests",
                             AllowedGrantTypes = { GrantType.ResourceOwnerPassword },
                             ClientSecrets = { new Secret("secret".Sha256()) },
-                            AllowedScopes = { ApplicationDbContext.TestClientScope, "openid", "profile" }
+                            AllowedScopes = { "Blackbox.Firewatch.WebAppAPI", "openid", "profile" }
                         });
                     }).AddTestUsers(new List<TestUser>
                     {
                         new TestUser
                         {
-                            SubjectId = "f26da293-02fb-4c90-be75-e4aa51e0bb17",
-                            Username = "testaccount@blackbox",
-                            Password = "Firewatch"
+                            SubjectId = TestHarness.StandardUser1.Id,
+                            Username = TestHarness.StandardUser1.Username,
+                            Password = TestHarness.StandardUser1.Password,
+                        },
+                        new TestUser
+                        {
+                            SubjectId = TestHarness.StandardUser2.Id,
+                            Username = TestHarness.StandardUser2.Username,
+                            Password = TestHarness.StandardUser2.Password,
                         }
                     });
             }
@@ -79,9 +86,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 services.AddIdentityServer()
                     .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-
-                services.AddTransient<IIdentityService, IdentityService>();
             }
+
+            services.AddTransient<IIdentityService, IdentityService>();
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();

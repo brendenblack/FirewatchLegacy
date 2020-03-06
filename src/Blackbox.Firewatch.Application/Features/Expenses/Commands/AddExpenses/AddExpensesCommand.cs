@@ -10,7 +10,7 @@ namespace Blackbox.Firewatch.Application.Features.Expenses.Commands.AddExpenses
 {
     public class AddExpensesCommand : PersonScopedAuthorizationRequiredRequest, IRequest<Result<AddExpensesResponse>>
     {
-        public override string[] AuthorizedRoles => throw new NotImplementedException();
+        //public override string[] AuthorizedRoles => throw new NotImplementedException();
 
         public class AddExpensesHandler : IRequestHandler<AddExpensesCommand, Result<AddExpensesResponse>>
         {

@@ -11,9 +11,10 @@ namespace Blackbox.Firewatch.Application.Features.Transactions.Commands.AddTrans
     {
         public AddTransactionsCommandValidator(IBankContext bankContext)
         {
-            RuleFor(c => c.OwnerId)
+            RuleFor(c => c.PersonId)
                 .Must(id => bankContext.People.Any(p => p.Id == id))
                 .WithMessage(id => $"No person exists with specified id {id}.");
+
 
             RuleForEach(c => c.Transactions)
                 .SetValidator(new TransactionModelValidator());

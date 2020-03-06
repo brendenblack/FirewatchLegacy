@@ -16,7 +16,7 @@ namespace Blackbox.Firewatch.Application.Features.Expenses.Commands.AddCategorie
     {
         public List<string> CategoryLabels { get; set; } = new List<string>();
 
-        public override string[] AuthorizedRoles => throw new NotImplementedException();
+        //public override string[] AuthorizedRoles => throw new NotImplementedException();
 
         public class AddCategoriesHandler : IRequestHandler<AddCategoriesCommand, Result<AddCategoriesResponse>>
         {

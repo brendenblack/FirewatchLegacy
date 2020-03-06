@@ -32,7 +32,7 @@ namespace Blackbox.Firewatch.Application.UnitTests.Features.Expenses.Queries.Get
         public async Task Handle_ReturnsSystemValues()
         {
             var logger = new XUnitLogger<GetCategoriesHandler>(_output);
-            var existingUser = new Person { Email = "testuser@firewatch.com" };
+            var existingUser = new Person();
             var systemCategories = new List<Category>
             {
                 new Category { Label = "category1", IsSystemDefault = true },

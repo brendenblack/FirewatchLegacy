@@ -35,7 +35,6 @@ namespace Blackbox.Firewatch.WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddFirewatch();
             services.AddPersistenceAndIdentity(Configuration, Environment);
             services.AddRoyalBankSupport();
@@ -43,6 +42,11 @@ namespace Blackbox.Firewatch.WebApp
             services.AddTransient<ICurrentUserService, HttpCurrentUserService>();
 
             services.AddHttpContextAccessor();
+
+            services.AddAuthorization(config =>
+            {
+                
+            });
 
             services.AddHealthChecks()
                 .AddDbContextCheck<ApplicationDbContext>();

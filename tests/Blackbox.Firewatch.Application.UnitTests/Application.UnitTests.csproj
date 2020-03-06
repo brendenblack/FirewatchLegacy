@@ -31,8 +31,4 @@
     <ProjectReference Include="..\Blackbox.TestHelpers\Blackbox.TestHelpers.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Transactions\Commands\" />
-  </ItemGroup>
-
 </Project>

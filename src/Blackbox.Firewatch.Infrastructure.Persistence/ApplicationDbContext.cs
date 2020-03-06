@@ -44,12 +44,6 @@ namespace Blackbox.Firewatch.Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder model)
         {
-            //model.Entity<Expense>()
-            //    .ToTable("expenses")
-            //    .HasDiscriminator<string>(e => e.ExpenseType)
-            //    .HasValue<OneTimeExpense>("one time")
-            //    .HasValue<OngoingExpense>("ongoing");
-
             // All entity configurations can be found in the Configurations folder.
             // These configurations will handle the basic mappings of how an entity should be
             // persisted to the database.
@@ -78,15 +72,7 @@ namespace Blackbox.Firewatch.Infrastructure.Persistence
             return base.SaveChangesAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// A convenience helper for wiring up <see cref="Startup"/> and integration tests
-        /// </summary>
-        public static string TestClientId => "Blackbox.Firewatch.WebApp.IntegrationTests";
-
-        /// <summary>
-        /// A convenience helper for wiring up <see cref="Startup"/> and integration tests
-        /// </summary>
-        public static string TestClientScope => "Blackbox.Firewatch.WebAppAPI";
+        
 
     }
 }

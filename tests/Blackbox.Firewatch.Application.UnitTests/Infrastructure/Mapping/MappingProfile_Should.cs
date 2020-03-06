@@ -28,6 +28,7 @@ namespace Blackbox.Firewatch.Application.UnitTests.Infrastructure.Mapping
 
         [Theory]
         [InlineData(typeof(Transaction), typeof(Application.Features.Transactions.Queries.ParseCsv.TransactionModel))]
+        [InlineData(typeof(Transaction), typeof(Application.Features.Transactions.Queries.FetchTransactions.FetchTransactionModel))]
         [InlineData(typeof(Category), typeof(Application.Features.Expenses.Queries.GetCategories.CategoryModel))]
         public void ShouldSupportMappingFromSourceToDestination(Type source, Type destination)
         {

@@ -10,10 +10,10 @@ namespace Blackbox.Firewatch.Application.Features
     /// </summary>
     public abstract class AuthorizationRequiredRequest
     {
-        /// <summary>
-        /// What roles are authorized to perform this request.
-        /// </summary>
-        public abstract string[] AuthorizedRoles { get; }
+        ///// <summary>
+        ///// What roles are authorized to perform this request.
+        ///// </summary>
+        //public abstract string[] AuthorizedRoles { get; }
         
         /// <summary>
         /// The id of the user who has submitted this request.

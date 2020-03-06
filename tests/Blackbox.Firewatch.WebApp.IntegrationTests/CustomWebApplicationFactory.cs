@@ -1,7 +1,13 @@
 ﻿using Blackbox.Firewatch.Application.Common.Interfaces;
+using Blackbox.Firewatch.Application.Security;
+using Blackbox.Firewatch.Domain;
 using Blackbox.Firewatch.Infrastructure.Persistence;
+using Blackbox.Firewatch.Infrastructure.Persistence.Identity;
+using Blackbox.Firewatch.Persistence;
+using Blackbox.Firewatch.WebApp.Infrastructure;
 using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,13 +37,14 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
                 });
 
                 // Register test services
-                services.AddScoped<ICurrentUserService, TestCurrentUserService>();
+                //services.AddSingleton<ICurrentUserService, TestCurrentUserService>();
+                services.AddScoped<ICurrentUserService, HttpCurrentUserService>();
                 //services.AddScoped<IDateTime, TestDateTimeService>();
-                services.AddScoped<IIdentityService, TestIdentityService>();
+                //services.AddScoped<IIdentityService, TestIdentityService>();
 
-                var sp = services.BuildServiceProvider();
+                _serviceProvider = services.BuildServiceProvider();
 
-                using (var scope = sp.CreateScope())
+                using (var scope = _serviceProvider.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
                     var context = scopedServices.GetRequiredService<ApplicationDbContext>();
@@ -53,21 +60,31 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
                     {
                         logger.LogError(ex, "An error occurred seeding the database with test messages. Error: {Message}", ex.Message);
                     }
+
+                    //var identityService = scopedServices.GetRequiredService<IIdentityService>();
+                    //SeedTestUsers(identityService);
                 }
             }).UseEnvironment("Test");
         }
+
+        private IServiceProvider _serviceProvider;
 
         public HttpClient GetAnonymousClient()
         {
             return CreateClient();
         }
 
-        public async Task<HttpClient> GetAuthenticatedClientAsync()
+        public async Task<HttpClient> GetAuthenticatedClientAsync(bool setAsCurrentUser = true)
         {
-            return await GetAuthenticatedClientAsync("testaccount@blackbox", "Firewatch");
+            return await GetAuthenticatedClientAsync("testaccount@blackbox", "password");
         }
 
-        public async Task<HttpClient> GetAuthenticatedClientAsync(string username, string password)
+        public async Task<HttpClient> GetAuthenticatedClientAsync(TestUserModel user)
+        {
+            return await GetAuthenticatedClientAsync(user.Username, user.Password);
+        }
+
+        public async Task<HttpClient> GetAuthenticatedClientAsync(string username, string password, bool setAsCurrentUser = true)
         {
             var client = CreateClient();
 
@@ -75,7 +92,18 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
 
             client.SetBearerToken(token);
 
+            if (setAsCurrentUser)
+            {
+                //    var currentUserService = _serviceProvider.GetRequiredService<ICurrentUserService>();
+                //    (currentUserService as TestCurrentUserService).UserId = "abcd";
+            }
+
             return client;
+        }
+
+        public ApplicationDbContext CreateContext()
+        {
+            return _serviceProvider.GetRequiredService<ApplicationDbContext>();
         }
 
         private async Task<string> GetAccessTokenAsync(HttpClient client, string username, string password)
@@ -86,13 +114,14 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
             {
                 throw new Exception(disco.Error);
             }
-
+            
+            // These string values for ClientId and Scope are established in the Persistence project's ServiceCollection extensions
             var request = new PasswordTokenRequest
             {
                 Address = disco.TokenEndpoint,
-                ClientId = ApplicationDbContext.TestClientId,
+                ClientId = "Blackbox.Firewatch.WebApp.IntegrationTests",
                 ClientSecret = "secret",
-                Scope = $"{ApplicationDbContext.TestClientScope} openid profile",
+                Scope = "Blackbox.Firewatch.WebAppAPI openid profile",
                 UserName = username,
                 Password = password
             };
@@ -109,6 +138,31 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
         public static void SeedSampleData(ApplicationDbContext context)
         {
             // TODO
+            context.People.AddRange(
+                new Person { Id = TestHarness.StandardUser1.Id },
+                new Person { Id = TestHarness.StandardUser2.Id });
+            context.SaveChanges();
         }
+
+
+        //public async Task SeedTestUsers(IIdentityService identityService)
+        //{
+        //    var standardUser1Response = await identityService.CreateUserAsync("standarduser1@blackbox", "password");
+        //    StandardUser1 = new TestUserModel(standardUser1Response.UserId, "standarduser1@blackbox", "password");
+
+        //    var standardUser2Response = await identityService.CreateUserAsync("standarduser2@blackbox", "password");
+        //    StandardUser2 = new TestUserModel(standardUser2Response.UserId, "standarduser2@blackbox", "password");
+
+        //    var adminUserResponse = await identityService.CreateUserAsync("adminuser@blackbox", "password", Roles.Administrator);
+        //    AdminUser = new TestUserModel(adminUserResponse.UserId, "adminuser@blackbox", "password");
+        //}
+
+        //public TestUserModel StandardUser1 { get; private set; }
+        //public TestUserModel StandardUser2 { get; private set; }
+        //public TestUserModel AdminUser { get; private set; }
+
+        
     }
+
+    
 }

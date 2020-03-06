@@ -14,6 +14,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Blackbox.Firewatch.Application.Common.Interfaces;
+using Blackbox.Firewatch.Domain;
+using Blackbox.Firewatch.Application.Features;
 
 namespace Blackbox.Firewatch.WebApp.Areas.Identity.Pages.Account
 {
@@ -24,17 +27,20 @@ namespace Blackbox.Firewatch.WebApp.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IIdentityService _identityService;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IIdentityService identityService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _identityService = identityService;
         }
 
         [BindProperty]
@@ -69,19 +75,22 @@ namespace Blackbox.Firewatch.WebApp.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        // This method has been modified from its stock boilerplate to use IIdentityService to actually
+        // create the new user.
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
-                var result = await _userManager.CreateAsync(user, Input.Password);
-                if (result.Succeeded)
+                (Result result, string userId) = await _identityService.CreateUserAsync(Input.Email, Input.Password);
+                if (result.IsSuccess)
                 {
+                    var user = await _userManager.FindByIdAsync(userId);
                     _logger.LogInformation("User created a new account with password.");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
@@ -102,10 +111,9 @@ namespace Blackbox.Firewatch.WebApp.Areas.Identity.Pages.Account
                         return LocalRedirect(returnUrl);
                     }
                 }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                
+                ModelState.AddModelError(string.Empty, result.Message);
+                
             }
 
             // If we got this far, something failed, redisplay form

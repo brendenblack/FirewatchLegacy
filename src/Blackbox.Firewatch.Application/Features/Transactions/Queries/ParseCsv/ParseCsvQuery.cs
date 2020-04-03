@@ -73,7 +73,7 @@ namespace Blackbox.Firewatch.Application.Features.Transactions.Queries.ParseCsv
                         .Max();
 
                     var accountsInPlay = parsedTransactions
-                        .Select(t => t.Account.AccountNumber)
+                        .Select(t => t.AccountNumber)
                         .Distinct();
 
                     // Limit the universe of transactions as much as possible to speed up the 

@@ -40,25 +40,24 @@ namespace Blackbox.Firewatch.Infrastructure.Rbc.IntegrationTests.RbcTransactionI
 
             var transactions = await sut.ParseTransactionsFromCsv(testContents, "CAD");
 
-            transactions.Count.ShouldBe(23);
+            transactions.Count.ShouldBe(24);
         }
 
         [Theory]
         [InlineData(2019, 11, 15, 3085.92, "CAD")]
         public async Task CreateExpectedTransactions(int year, int month, int day, decimal expectedAmount, string expectedCurrency)
         {
-            var date = new DateTime(year, month, day);
             var logger = new XUnitLogger<RbcTransactionParser>(this.output);
             var testContents = ReadLocalTestFile("test1.csv");
             var sut = new RbcTransactionParser(logger);
 
             var transactions = await sut.ParseTransactionsFromCsv(testContents, "CAD");
 
-            var transaction = transactions.FirstOrDefault(tx => tx.Date == date);
+            var transaction = transactions.FirstOrDefault(tx => tx.Date.Date == new DateTime(year, month, day).Date);
             transaction.ShouldNotBeNull("Expected test entry was not found. This suggests that the test file has changed and this method must be updated.");
 
             transaction.Amount.ShouldBe(expectedAmount);
-            transaction.Currency.ShouldBe(Currency.ByAlphabeticCode(expectedCurrency));
+            transaction.Currency.ShouldBe(expectedCurrency);
         }
     }
 }

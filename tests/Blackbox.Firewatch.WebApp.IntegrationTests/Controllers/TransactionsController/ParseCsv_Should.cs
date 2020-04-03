@@ -31,7 +31,7 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests.Controllers.TransactionsCon
             };
             var content = IntegrationTestHelper.GetRequestContent(query);
 
-            var response = await client.PostAsync($"/api/users/{TestHarness.StandardUser1.Id}/transactions/parse", content);
+            var response = await client.PostAsync($"/api/transactions/parse", content);
 
             response.IsSuccessStatusCode.ShouldBeTrue($"{response.StatusCode}: {response.ReasonPhrase}");
         }

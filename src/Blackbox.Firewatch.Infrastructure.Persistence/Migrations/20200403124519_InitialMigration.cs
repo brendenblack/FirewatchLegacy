@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Blackbox.Firewatch.WebApp.Migrations
+namespace Blackbox.Firewatch.Infrastructure.Persistence.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -61,6 +61,44 @@ namespace Blackbox.Firewatch.WebApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DeviceCodes", x => x.UserCode);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "expense_categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Label = table.Column<string>(nullable: true),
+                    IsSystemDefault = table.Column<bool>(nullable: false),
+                    CreatorId = table.Column<string>(nullable: true),
+                    CreatedOn = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_expense_categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FinancialInstitution",
+                columns: table => new
+                {
+                    Name = table.Column<string>(nullable: true),
+                    Abbreviation = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                });
+
+            migrationBuilder.CreateTable(
+                name: "people",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_people", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -186,6 +224,122 @@ namespace Blackbox.Firewatch.WebApp.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "expense_subcategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ParentCategoryId = table.Column<int>(nullable: false),
+                    Label = table.Column<string>(nullable: true),
+                    IsSystemDefault = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_expense_subcategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_expense_subcategories_expense_categories_ParentCategoryId",
+                        column: x => x.ParentCategoryId,
+                        principalTable: "expense_categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "bank_accounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedById = table.Column<string>(nullable: true),
+                    Created = table.Column<DateTime>(nullable: false),
+                    LastModifiedById = table.Column<string>(nullable: true),
+                    LastModified = table.Column<DateTime>(nullable: true),
+                    AccountNumber = table.Column<string>(nullable: true),
+                    AccountType = table.Column<int>(nullable: false),
+                    OwnerId = table.Column<string>(nullable: true),
+                    OwnerId1 = table.Column<string>(nullable: true),
+                    Institution = table.Column<string>(nullable: true),
+                    Nickname = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_bank_accounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_bank_accounts_people_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "people",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_bank_accounts_people_LastModifiedById",
+                        column: x => x.LastModifiedById,
+                        principalTable: "people",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_bank_accounts_people_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "people",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_bank_accounts_people_OwnerId1",
+                        column: x => x.OwnerId1,
+                        principalTable: "people",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "transactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedById = table.Column<string>(nullable: true),
+                    Created = table.Column<DateTime>(nullable: false),
+                    LastModifiedById = table.Column<string>(nullable: true),
+                    LastModified = table.Column<DateTime>(nullable: true),
+                    Notes = table.Column<string>(nullable: true),
+                    AccountId1 = table.Column<int>(nullable: true),
+                    Date = table.Column<DateTime>(nullable: false),
+                    Descriptions = table.Column<string>(nullable: true),
+                    Amount = table.Column<decimal>(type: "decimal(30,2)", nullable: false),
+                    Currency = table.Column<string>(nullable: false),
+                    TransactionType = table.Column<int>(nullable: false),
+                    HashCode = table.Column<int>(nullable: false),
+                    AccountId = table.Column<int>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_transactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_transactions_bank_accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "bank_accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_transactions_bank_accounts_AccountId1",
+                        column: x => x.AccountId1,
+                        principalTable: "bank_accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_transactions_people_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "people",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_transactions_people_LastModifiedById",
+                        column: x => x.LastModifiedById,
+                        principalTable: "people",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -226,6 +380,26 @@ namespace Blackbox.Firewatch.WebApp.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_bank_accounts_CreatedById",
+                table: "bank_accounts",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bank_accounts_LastModifiedById",
+                table: "bank_accounts",
+                column: "LastModifiedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bank_accounts_OwnerId",
+                table: "bank_accounts",
+                column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_bank_accounts_OwnerId1",
+                table: "bank_accounts",
+                column: "OwnerId1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DeviceCodes_DeviceCode",
                 table: "DeviceCodes",
                 column: "DeviceCode",
@@ -237,6 +411,11 @@ namespace Blackbox.Firewatch.WebApp.Migrations
                 column: "Expiration");
 
             migrationBuilder.CreateIndex(
+                name: "IX_expense_subcategories_ParentCategoryId",
+                table: "expense_subcategories",
+                column: "ParentCategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_Expiration",
                 table: "PersistedGrants",
                 column: "Expiration");
@@ -245,6 +424,26 @@ namespace Blackbox.Firewatch.WebApp.Migrations
                 name: "IX_PersistedGrants_SubjectId_ClientId_Type",
                 table: "PersistedGrants",
                 columns: new[] { "SubjectId", "ClientId", "Type" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transactions_AccountId",
+                table: "transactions",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transactions_AccountId1",
+                table: "transactions",
+                column: "AccountId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transactions_CreatedById",
+                table: "transactions",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transactions_LastModifiedById",
+                table: "transactions",
+                column: "LastModifiedById");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -268,13 +467,31 @@ namespace Blackbox.Firewatch.WebApp.Migrations
                 name: "DeviceCodes");
 
             migrationBuilder.DropTable(
+                name: "expense_subcategories");
+
+            migrationBuilder.DropTable(
+                name: "FinancialInstitution");
+
+            migrationBuilder.DropTable(
                 name: "PersistedGrants");
+
+            migrationBuilder.DropTable(
+                name: "transactions");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "expense_categories");
+
+            migrationBuilder.DropTable(
+                name: "bank_accounts");
+
+            migrationBuilder.DropTable(
+                name: "people");
         }
     }
 }

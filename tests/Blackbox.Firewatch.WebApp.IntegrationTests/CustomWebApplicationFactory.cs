@@ -1,6 +1,7 @@
 ﻿using Blackbox.Firewatch.Application.Common.Interfaces;
 using Blackbox.Firewatch.Application.Security;
 using Blackbox.Firewatch.Domain;
+using Blackbox.Firewatch.Domain.Bank;
 using Blackbox.Firewatch.Infrastructure.Persistence;
 using Blackbox.Firewatch.Infrastructure.Persistence.Identity;
 using Blackbox.Firewatch.Persistence;
@@ -33,7 +34,7 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
                 }
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("InMemoryApplicationDbForTesting");
+                    options.UseInMemoryDatabase("InMemoryTestDb");
                 });
 
                 // Register test services
@@ -103,7 +104,9 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
 
         public ApplicationDbContext CreateContext()
         {
-            return _serviceProvider.GetRequiredService<ApplicationDbContext>();
+            var serviceScopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            var scope = serviceScopeFactory.CreateScope();
+            return scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         }
 
         private async Task<string> GetAccessTokenAsync(HttpClient client, string username, string password)
@@ -141,6 +144,22 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests
             context.People.AddRange(
                 new Person { Id = TestHarness.StandardUser1.Id },
                 new Person { Id = TestHarness.StandardUser2.Id });
+
+
+            var account = new Account
+            {
+                AccountNumber = "123-readonly",
+                Institution = FinancialInstitution.RoyalBank,
+                OwnerId = TestHarness.StandardUser1.Id,
+            };
+            account.Transactions.Add(new Transaction(account, new DateTime(2019, 01, 10), 100));
+            account.Transactions.Add(new Transaction(account, new DateTime(2019, 02, 10), 100));
+            account.Transactions.Add(new Transaction(account, new DateTime(2019, 03, 10), 100));
+            account.Transactions.Add(new Transaction(account, new DateTime(2019, 04, 10), 100));
+            account.Transactions.Add(new Transaction(account, new DateTime(2019, 05, 10), 100));
+            context.Accounts.Add(account);
+
+
             context.SaveChanges();
         }
 

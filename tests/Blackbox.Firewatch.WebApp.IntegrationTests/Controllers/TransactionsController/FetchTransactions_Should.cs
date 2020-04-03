@@ -3,6 +3,7 @@ using Blackbox.Firewatch.Domain.Bank;
 using Blackbox.Firewatch.Persistence;
 using Shouldly;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Xunit;
@@ -23,42 +24,18 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests.Controllers.TransactionsCon
         public async Task GivenAuthenticated_ReturnTransactions()
         {
             var client = await _factory.GetAuthenticatedClientAsync(TestHarness.StandardUser1);
-            using (var db = _factory.CreateContext())
-            {
-                var account = new Account
-                {
-                    AccountNumber = "12345",
-                    Institution = FinancialInstitution.RoyalBank,
-                    OwnerId = TestHarness.StandardUser1.Id,
-                };
-                account.Transactions.Add(new Transaction(account, DateTime.Now, 100));
-                db.Accounts.Add(account);
-                await db.SaveChangesAsync();
-            }
             
             var response = await client.GetAsync($"/api/transactions");
 
             response.IsSuccessStatusCode.ShouldBeTrue($"{(int)response.StatusCode}: {response.ReasonPhrase}");
             var model = await IntegrationTestHelper.GetResponseContent<FetchTransactionsResponse>(response);
-            model.Transactions.Count.ShouldBe(1);
+            model.Transactions.ShouldNotBeEmpty();
         }
 
         [Fact]
         public async Task ReturnUnauthorized_WhenNotAuthenticated()
         {
             var client = _factory.GetAnonymousClient();
-            using (var db = _factory.CreateContext())
-            {
-                var account = new Account
-                {
-                    AccountNumber = "12345",
-                    Institution = FinancialInstitution.RoyalBank,
-                    OwnerId = TestHarness.StandardUser1.Id,
-                };
-                account.Transactions.Add(new Transaction(account, DateTime.Now, 100));
-                db.Accounts.Add(account);
-                await db.SaveChangesAsync();
-            }
 
             var response = await client.GetAsync($"/api/transactions");
 
@@ -70,22 +47,6 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests.Controllers.TransactionsCon
         public async Task GivenAuthenticated_ReturnTransactionsLaterThanFromDate()
         {
             var client = await _factory.GetAuthenticatedClientAsync(TestHarness.StandardUser1);
-            using (var db = _factory.CreateContext())
-            {
-                var account = new Account
-                {
-                    AccountNumber = "12345",
-                    Institution = FinancialInstitution.RoyalBank,
-                    OwnerId = TestHarness.StandardUser1.Id,
-                };
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 01, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 02, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 03, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 04, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 05, 10), 100));
-                db.Accounts.Add(account);
-                await db.SaveChangesAsync();
-            }
             var query = HttpUtility.ParseQueryString(string.Empty);
             query["from"] = "20190201";
 
@@ -93,37 +54,21 @@ namespace Blackbox.Firewatch.WebApp.IntegrationTests.Controllers.TransactionsCon
 
             response.IsSuccessStatusCode.ShouldBeTrue($"{(int)response.StatusCode}: {response.ReasonPhrase}");
             var model = await IntegrationTestHelper.GetResponseContent<FetchTransactionsResponse>(response);
-            model.Transactions.Count.ShouldBe(4);
+            model.Transactions.Any(tx => tx.Date.Date < new DateTime(2019, 02, 01).Date).ShouldBeFalse();
         }
 
         [Fact]
         public async Task GivenAuthenticated_ReturnTransactionsEarlierThanToDate()
         {
             var client = await _factory.GetAuthenticatedClientAsync(TestHarness.StandardUser1);
-            using (var db = _factory.CreateContext())
-            {
-                var account = new Account
-                {
-                    AccountNumber = "12345",
-                    Institution = FinancialInstitution.RoyalBank,
-                    OwnerId = TestHarness.StandardUser1.Id,
-                };
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 01, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 02, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 03, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 04, 10), 100));
-                account.Transactions.Add(new Transaction(account, new DateTime(2019, 05, 10), 100));
-                db.Accounts.Add(account);
-                await db.SaveChangesAsync();
-            }
             var query = HttpUtility.ParseQueryString(string.Empty);
-            query["from"] = "20190201";
+            query["to"] = "20190201";
 
             var response = await client.GetAsync($"/api/transactions?{query.ToString()}");
 
             response.IsSuccessStatusCode.ShouldBeTrue($"{(int)response.StatusCode}: {response.ReasonPhrase}");
             var model = await IntegrationTestHelper.GetResponseContent<FetchTransactionsResponse>(response);
-            model.Transactions.Count.ShouldBe(4);
+            model.Transactions.Any(tx => tx.Date.Date > new DateTime(2019, 02, 01).Date).ShouldBeFalse();
         }
     }
 }

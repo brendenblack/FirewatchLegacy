@@ -1,4 +1,5 @@
-﻿using Blackbox.Firewatch.Domain;
+﻿using Blackbox.Firewatch.Application.Features.Transactions.Queries.ParseCsv;
+using Blackbox.Firewatch.Domain;
 using Blackbox.Firewatch.Domain.Bank;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,6 @@ namespace Blackbox.Firewatch.Application.Common.Interfaces
         /// <param name="contents"></param>
         /// <param name="defaultCurrency">What currency to assume if the transaction record does not specify one.</param>
         /// <returns></returns>
-        public Task<IReadOnlyCollection<Transaction>> ParseTransactionsFromCsv(string contents, string defaultCurrency = "CAD");
+        public Task<IReadOnlyCollection<TransactionModel>> ParseTransactionsFromCsv(string contents, string defaultCurrency = "CAD");
     }
 }

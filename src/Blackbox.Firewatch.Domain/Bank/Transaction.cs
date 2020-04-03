@@ -6,7 +6,7 @@ using TeixeiraSoftware.Finance;
 
 namespace Blackbox.Firewatch.Domain.Bank
 {
-    public class Transaction
+    public class Transaction : AuditableEntity
     {
         [Obsolete("The default constructor is only a conceit for easier integration with Automapper and EF.")]
         public Transaction() { }

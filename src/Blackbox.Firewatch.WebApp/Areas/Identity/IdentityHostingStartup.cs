@@ -1,6 +1,4 @@
 ﻿using System;
-using Blackbox.Firewatch.WebApp.Data;
-using Blackbox.Firewatch.WebApp.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;

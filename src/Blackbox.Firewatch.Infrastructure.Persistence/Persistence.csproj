@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Blackbox.Firewatch.Persistence</RootNamespace>
-    <AssemblyName>Blackbox.Firewatch.Persistence</AssemblyName>
+    <RootNamespace>Blackbox.Firewatch.Infrastructure.Persistence</RootNamespace>
+    <AssemblyName>Blackbox.Firewatch.Infrastructure.Persistence</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

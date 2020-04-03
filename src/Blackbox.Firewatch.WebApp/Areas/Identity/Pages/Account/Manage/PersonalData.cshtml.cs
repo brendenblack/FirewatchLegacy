@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Blackbox.Firewatch.WebApp.Models;
+using Blackbox.Firewatch.Infrastructure.Persistence.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

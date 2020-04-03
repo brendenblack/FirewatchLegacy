@@ -1,5 +1,6 @@
 ﻿using Blackbox.Firewatch.Application.Common.Interfaces;
 using Blackbox.Firewatch.Application.Security;
+using Blackbox.Firewatch.Domain;
 using Blackbox.Firewatch.Domain.Bank;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -52,10 +53,13 @@ namespace Blackbox.Firewatch.Application.Features.Transactions.Commands.AddTrans
 
                     if (account == null)
                     {
-                        logger.LogDebug("Skipping adding {} transactions in to account {} because it does not exist.",
-                            accountGroup.Count(),
-                            accountGroup.Key);
-                        continue;
+                        account = CreateAccount(request.PersonId, accountGroup.Key);
+                        bankContext.Accounts.Add(account);
+                        await bankContext.SaveChangesAsync();
+                        //logger.LogDebug("Skipping adding {} transactions in to account {} because it does not exist.",
+                        //    accountGroup.Count(),
+                        //    accountGroup.Key);
+                        //continue;
                     }
 
                     foreach (var tx in accountGroup)
@@ -77,6 +81,17 @@ namespace Blackbox.Firewatch.Application.Features.Transactions.Commands.AddTrans
                 };
 
                 return Result.Ok(response);
+            }
+
+            public Account CreateAccount(string ownerId, string accountNumber)
+            {
+                var account = new Account()
+                {
+                    OwnerId = ownerId,
+                    AccountNumber = accountNumber
+                };
+
+                return account;
             }
         }
     }

@@ -1,0 +1,23 @@
+﻿{
+  "number": {
+    "length": 16,
+    "luhn": true
+  },
+  "scheme": "visa",
+  "type": "credit",
+  "brand": "Traditional",
+  "prepaid": false,
+  "country": {
+    "numeric": "124",
+    "alpha2": "CA",
+    "name": "Canada",
+    "emoji": "🇨🇦",
+    "currency": "CAD",
+    "latitude": 60,
+    "longitude": -95
+  },
+  "bank": {
+    "name": "ROYAL",
+    "phone": "8007692512"
+  }
+}

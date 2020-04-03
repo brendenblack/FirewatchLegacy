@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Blackbox.Firewatch.Application.UnitTests.Features.Expenses.Commands.AddCategories
@@ -13,6 +14,8 @@ namespace Blackbox.Firewatch.Application.UnitTests.Features.Expenses.Commands.Ad
         {
             this.output = output;
         }
+
+        
 
 
     }

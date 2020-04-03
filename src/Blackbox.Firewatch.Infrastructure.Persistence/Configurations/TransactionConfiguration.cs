@@ -1,5 +1,6 @@
 ﻿using Blackbox.Firewatch.Domain.Bank;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Newtonsoft.Json;
 using System;
@@ -26,10 +27,18 @@ namespace Blackbox.Firewatch.Infrastructure.Persistence.Configurations
                     model => model.AlphabeticCode,
                     db => Currency.ByAlphabeticCode(db));
 
+            ValueComparer<IList<string>> descriptionComparer = new ValueComparer<IList<string>>(
+                (a, b) => a.Equals(b),
+                c => c.GetHashCode());
+
             builder.Property(t => t.Descriptions)
                 .HasConversion(
                     model => JsonConvert.SerializeObject(model, Formatting.None),
-                    db => JsonConvert.DeserializeObject<List<string>>(db));
+                    db => JsonConvert.DeserializeObject<List<string>>(db))
+                .Metadata.SetValueComparer(descriptionComparer);
+
+            builder.Property(t => t.Amount)
+                .HasColumnType("decimal(30,2)");
 
             builder.HasOne(t => t.Account)
                 .WithMany();

@@ -55,9 +55,15 @@ namespace Blackbox.Firewatch.Application.UnitTests.Features.Transactions.Queries
             var parser = A.Fake<ITransactionParser>();
             A.CallTo(() => parser.SupportedInstitution).Returns(FinancialInstitution.RoyalBank);
             var testAccount = new Account() { AccountNumber = "12345" };
-            IReadOnlyCollection<Transaction> returnedTransactions = new List<Transaction>()
+            IReadOnlyCollection<TransactionModel> returnedTransactions = new List<TransactionModel>()
             {
-                new Transaction(testAccount, DateTime.Now, 100, "CAD")
+                new TransactionModel
+                {
+                    AccountNumber = testAccount.AccountNumber,
+                    Date = DateTime.Now,
+                    Amount = 100,
+                    Currency = "CAD",
+                }
             };
             A.CallTo(() => parser.ParseTransactionsFromCsv("", "CAD")).Returns(Task.FromResult(returnedTransactions));
             var sut = new ParseCsvHandler(logger, bankContext, new List<ITransactionParser>() { parser }, mapper);
@@ -79,7 +85,7 @@ namespace Blackbox.Firewatch.Application.UnitTests.Features.Transactions.Queries
         [Fact]
         public async Task Handle_ShouldNotMarkDuplicates_WhenIdentifyDuplicatesIsFalse()
         {
-            var testAccount = new Account() { AccountNumber = "12345" };
+            var testAccount = new Account() { AccountNumber = "12345", OwnerId = Guid.NewGuid().ToString() };
             IReadOnlyCollection<Transaction> returnedTransactions = new List<Transaction>()
             {
                 new Transaction(testAccount, new DateTime(2020,01,10), 100),
@@ -95,7 +101,16 @@ namespace Blackbox.Firewatch.Application.UnitTests.Features.Transactions.Queries
             var transactionModels = mapper.Map<List<TransactionModel>>(returnedTransactions);
             // When the handler tries to parse the csv content it will receive a list mapped from the same
             // transactions we added earlier, ensuring they appear as duplicates.
-            A.CallTo(() => parser.ParseTransactionsFromCsv("", "CAD")).Returns(Task.FromResult(returnedTransactions));
+            IReadOnlyCollection<TransactionModel> returnedParseResults = returnedTransactions.Select(tx => new TransactionModel
+            {
+                AccountNumber = testAccount.AccountNumber,
+                Date = tx.Date,
+                Descriptions = tx.Descriptions.ToList(),
+                Amount = tx.Amount,
+                Currency = tx.Currency.AlphabeticCode,
+            })
+            .ToList();
+            A.CallTo(() => parser.ParseTransactionsFromCsv("", "CAD")).Returns(Task.FromResult(returnedParseResults));
             var sut = new ParseCsvHandler(logger, _fixture.Context, new List<ITransactionParser>() { parser }, mapper);
             var request = new ParseCsvQuery
             {

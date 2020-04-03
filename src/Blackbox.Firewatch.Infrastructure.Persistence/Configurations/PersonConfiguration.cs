@@ -14,11 +14,9 @@ namespace Blackbox.Firewatch.Infrastructure.Persistence.Configurations
             builder.ToTable("people")
                 .HasKey(p => p.Id);
 
-            builder.Property(p => p.Id)
-                .ValueGeneratedOnAdd();
-
             builder.HasMany(p => p.Accounts)
-                .WithOne();
+                .WithOne()
+                .HasForeignKey(a => a.OwnerId);
         }
     }
 }

@@ -21,6 +21,7 @@ export class Login extends Component {
         const action = this.props.action;
         switch (action) {
             case LoginActions.Login:
+                console.log('Attempting to log in...');
                 this.login(this.getReturnUrl());
                 break;
             case LoginActions.LoginCallback:
@@ -45,7 +46,7 @@ export class Login extends Component {
     render() {
         const action = this.props.action;
         const { message } = this.state;
-
+        console.log('rendering Login.js', action);
         if (!!message) {
             return <div>{message}</div>
         } else {
@@ -66,8 +67,10 @@ export class Login extends Component {
     async login(returnUrl) {
         const state = { returnUrl };
         const result = await authService.signIn(state);
+        console.log('Received sign in result', result);
         switch (result.status) {
             case AuthenticationResultStatus.Redirect:
+                console.log('Redirect');
                 break;
             case AuthenticationResultStatus.Success:
                 await this.navigateToReturnUrl(returnUrl);
